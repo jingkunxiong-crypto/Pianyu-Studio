@@ -1,0 +1,24 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+/build
+/captures
+.externalNativeBuild
+.cxx
+app/build
+/.kotlin
+/artifacts
+*.jks
+*.keystore
+*.p12
+*.pem
+.env
+.env.*
+
+# Local previews, scripts, device captures and release staging
+/work/
+/dist/
+/.codex*/
+*.hprof
+*.log
