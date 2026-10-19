@@ -955,19 +955,12 @@ private fun SpacingControls(
         Text("间距大小", color = GeyiTextPrimary, fontSize = 13.sp)
         Text("$spacingPercent%", color = GeyiIce, fontSize = 14.sp)
     }
-    Slider(
+    com.pianyu.studio.ui.StudioSlider(
         value = spacingPercent.toFloat(),
         onValueChange = { onSpacingChange(it.roundToInt()) },
         valueRange = 0f..8f,
         steps = 7,
-        modifier = Modifier.fillMaxWidth().height(34.dp).testTag("spacing_slider"),
-        colors = SliderDefaults.colors(
-            thumbColor = GeyiIce,
-            activeTrackColor = GeyiIce,
-            inactiveTrackColor = GeyiSurfaceVariant,
-            activeTickColor = GeyiSurfaceVariant,
-            inactiveTickColor = GeyiTextSecondary,
-        ),
+        modifier = Modifier.fillMaxWidth().testTag("spacing_slider"),
     )
     Spacer(Modifier.height(20.dp))
     val shape = RoundedCornerShape(10.dp)

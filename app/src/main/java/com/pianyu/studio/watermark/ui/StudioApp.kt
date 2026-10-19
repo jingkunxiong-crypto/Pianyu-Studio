@@ -625,20 +625,8 @@ private fun EmptySignatures(create: () -> Unit) {
 internal fun ValueSlider(label: String, value: String, number: Float, change: (Float) -> Unit, range: ClosedFloatingPointRange<Float>, enabled: Boolean = true) {
     Column {
         Row(Modifier.fillMaxWidth()) {Text(label,Modifier.weight(1f),style=MaterialTheme.typography.bodyMedium);Text(value,color=Ice)}
-        Slider(value=number,onValueChange=change,valueRange=range,enabled=enabled,
-            modifier=Modifier.semantics {contentDescription=label},
-            thumb = {
-                Box(Modifier.size(20.dp).background(Ice, CircleShape)
-                    .border(1.dp, Color.White.copy(alpha=.6f), CircleShape))
-            },
-            track = {
-                Canvas(Modifier.fillMaxWidth().height(4.dp)) {
-                    val fraction = (number-range.start)/(range.endInclusive-range.start)
-                    drawLine(StudioPalette.Outline, Offset(0f,size.height/2), Offset(size.width,size.height/2), size.height, StrokeCap.Round)
-                    drawLine(Ice, Offset(0f,size.height/2), Offset(size.width*fraction,size.height/2), size.height, StrokeCap.Round)
-                }
-            },
-            colors=SliderDefaults.colors(thumbColor=Ice,activeTrackColor=Ice,inactiveTrackColor=StudioPalette.Outline))
+        com.pianyu.studio.ui.StudioSlider(value=number,onValueChange=change,valueRange=range,enabled=enabled,
+            modifier=Modifier.semantics {contentDescription=label})
     }
 }
 

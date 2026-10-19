@@ -1,6 +1,7 @@
 package com.pianyu.studio.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 object StudioPalette {
@@ -28,6 +34,36 @@ object StudioPalette {
     val Surface = Color(0xFFF7F9F8)
     val Container = Color(0xFFDDE8E3)
     val Outline = Color(0xFFB9CCC5)
+}
+
+/** Shared capsule slider, retaining Material's gestures, steps and accessibility. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StudioSlider(value:Float,onValueChange:(Float)->Unit,modifier:Modifier=Modifier,
+                 enabled:Boolean=true,valueRange:ClosedFloatingPointRange<Float> = 0f..1f,
+                 steps:Int=0,onValueChangeFinished:(()->Unit)?=null) {
+    val interaction=remember {MutableInteractionSource()}
+    val rtl=LocalLayoutDirection.current==LayoutDirection.Rtl
+    val accent=if(enabled) StudioPalette.Accent else StudioPalette.Muted.copy(alpha=.4f)
+    val trackColor=if(enabled) StudioPalette.Outline.copy(alpha=.65f) else StudioPalette.Outline.copy(alpha=.3f)
+    Slider(value=value,onValueChange=onValueChange,modifier=modifier.heightIn(min=48.dp),
+        enabled=enabled,valueRange=valueRange,steps=steps,onValueChangeFinished=onValueChangeFinished,
+        interactionSource=interaction,
+        thumb={
+            Box(Modifier.size(width=40.dp,height=26.dp)
+                .clip(RoundedCornerShape(50))
+                .background(Brush.verticalGradient(listOf(accent,accent.copy(alpha=.85f))))
+                .border(1.5.dp,StudioPalette.Surface,RoundedCornerShape(50)))
+        },
+        track={
+            val fraction=((value-valueRange.start)/(valueRange.endInclusive-valueRange.start)).coerceIn(0f,1f)
+            Canvas(Modifier.fillMaxWidth().height(14.dp).clip(RoundedCornerShape(50))) {
+                drawRoundRect(trackColor,cornerRadius=CornerRadius(size.height/2))
+                val fillWidth=size.width*fraction
+                drawRect(accent,topLeft=Offset(if(rtl) size.width-fillWidth else 0f,0f),size=Size(fillWidth,size.height))
+            }
+        }
+    )
 }
 
 fun Modifier.studioGlass(strong: Boolean = false): Modifier {

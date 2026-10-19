@@ -84,7 +84,7 @@ fun PhotoEditScreen(uri: String, model: PhotoEditViewModel, onBack: () -> Unit, 
                         }
                     }
                     Text("${adjustment.label}  ${state.settings.valueFor(adjustment)}", color = Ice)
-                    Slider(value = state.settings.valueFor(adjustment).toFloat(),
+                    StudioSlider(value = state.settings.valueFor(adjustment).toFloat(),
                         onValueChange = { model.update(state.settings.withValue(adjustment, it.roundToInt())) },
                         valueRange = adjustment.minimum.toFloat()..adjustment.maximum.toFloat(), enabled = !state.busy)
                 }

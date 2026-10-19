@@ -11,7 +11,6 @@ import com.pianyu.studio.watermark.signature.ExtractionViewModel
 import com.pianyu.studio.watermark.photo.PhotoViewModel
 import com.pianyu.studio.watermark.photo.BatchStudioViewModel
 import com.pianyu.studio.watermark.ui.theme.PianyuStudioTheme
-import com.pianyu.studio.photoedit.PhotoEditViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,7 +22,6 @@ class MainActivity : ComponentActivity() {
         val photos = provider[PhotoViewModel::class.java]
         val extraction = provider[ExtractionViewModel::class.java]
         val batch = provider[BatchStudioViewModel::class.java]
-        val photoEditor = provider[PhotoEditViewModel::class.java]
-        setContent { PianyuStudioTheme { PianyuStudioApp(signatures, photos, extraction, batch, photoEditor) } }
+        setContent { PianyuStudioTheme { PianyuStudioApp(signatures, photos, extraction, batch) } }
     }
 }

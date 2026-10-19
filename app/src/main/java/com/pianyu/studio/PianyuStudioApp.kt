@@ -50,8 +50,7 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.pianyu.studio.media.RecentWorks
 import com.pianyu.studio.collage.ui.GeyiApp
-import com.pianyu.studio.photoedit.PhotoEditScreen
-import com.pianyu.studio.photoedit.PhotoEditViewModel
+import com.pianyu.studio.creative.CreativeEditScreen
 import com.pianyu.studio.watermark.ui.*
 import com.pianyu.studio.watermark.ui.theme.*
 import com.pianyu.studio.watermark.signature.*
@@ -59,15 +58,16 @@ import com.pianyu.studio.watermark.photo.*
 
 @Composable
 fun PianyuStudioApp(signatures: SignatureViewModel, photos: PhotoViewModel,
-                    extraction: ExtractionViewModel, batch: BatchStudioViewModel, photoEditor: PhotoEditViewModel) {
+                    extraction: ExtractionViewModel, batch: BatchStudioViewModel) {
     var route by rememberSaveable { mutableStateOf("home") }
     var photoUri by rememberSaveable { mutableStateOf<String?>(null) }
+    var editSession by rememberSaveable { mutableIntStateOf(0) }
     var signatureInput by rememberSaveable { mutableStateOf<String?>(null) }
     var homeRefresh by rememberSaveable { mutableIntStateOf(0) }
     val holder = rememberSaveableStateHolder()
     fun leaveFeature() { route = "home"; homeRefresh++ }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) { photoUri = uri.toString(); route = "edit" }
+        if (uri != null) { photoUri = uri.toString(); editSession++; route = "edit" }
     }
     fun sign(uri: Uri) { signatureInput = uri.toString(); route = "signature" }
     BackHandler(enabled = route != "home") { route = "home" }
@@ -92,7 +92,9 @@ fun PianyuStudioApp(signatures: SignatureViewModel, photos: PhotoViewModel,
                 onInputConsumed = { signatureInput = null })
             "collage" -> GeyiApp(onExit = ::leaveFeature, onSign = ::sign)
             "edit" -> photoUri?.let { uri ->
-                PhotoEditScreen(uri, photoEditor, onBack = ::leaveFeature, onSign = ::sign)
+                key(editSession) {
+                    CreativeEditScreen(uri, onBack = ::leaveFeature, onSign = ::sign)
+                }
             }
             else -> key(homeRefresh) { StudioHome(
                 onEdit = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
@@ -139,7 +141,7 @@ private fun StudioHome(onEdit: () -> Unit, onCollage: () -> Unit, onSignature: (
                 }
                 Column(Modifier.fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(12.dp)) {
                     Row(horizontalArrangement=Arrangement.spacedBy(12.dp)) {
-                        HomeTool("01","照片编辑","光线 · 色彩 · 裁剪",Modifier.size(tileSize),onEdit)
+                        HomeTool("01","创意编辑","黑白之间 · 留住色彩",Modifier.size(tileSize),onEdit)
                         HomeTool("02","自由拼图","组合你的瞬间",Modifier.size(tileSize),onCollage)
                     }
                     Row(horizontalArrangement=Arrangement.spacedBy(12.dp)) {
