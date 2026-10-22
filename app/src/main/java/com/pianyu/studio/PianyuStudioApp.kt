@@ -85,6 +85,7 @@ fun PianyuStudioApp(signatures: SignatureViewModel, photos: PhotoViewModel,
     },label="studio navigation") { page ->
     holder.SaveableStateProvider(page) {
         when (page) {
+            "about" -> AboutScreen(onBack=::leaveFeature)
             "palette" -> ColorCardScreen(onBack = ::leaveFeature, signatures = signatures)
             "works" -> RecentWorksScreen(onBack=::leaveFeature,onSign=::sign)
             "signature" -> StudioApp(signatures, photos, extraction, batch,
@@ -98,7 +99,7 @@ fun PianyuStudioApp(signatures: SignatureViewModel, photos: PhotoViewModel,
             }
             else -> key(homeRefresh) { StudioHome(
                 onEdit = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-                onCollage = { route = "collage" }, onSignature = { route = "signature" }, onPalette = { route = "palette" }, onWorks = { route = "works" })
+                onCollage = { route = "collage" }, onSignature = { route = "signature" }, onPalette = { route = "palette" }, onWorks = { route = "works" }, onAbout = { route = "about" })
             }
         }
     }
@@ -123,7 +124,7 @@ private fun OpeningMark(progress:Float) {
 
 @Composable
 private fun StudioHome(onEdit: () -> Unit, onCollage: () -> Unit, onSignature: () -> Unit,
-                       onPalette: () -> Unit, onWorks: () -> Unit) {
+                       onPalette: () -> Unit, onWorks: () -> Unit, onAbout: () -> Unit) {
     val context = LocalContext.current
     val works = remember { RecentWorks.list(context) }
     Box(Modifier.fillMaxSize()) {
@@ -134,10 +135,11 @@ private fun StudioHome(onEdit: () -> Unit, onCollage: () -> Unit, onSignature: (
                 Row(verticalAlignment=Alignment.CenterVertically) {
                     Image(painterResource(R.drawable.studio_icon),null,Modifier.size(38.dp).clip(RoundedCornerShape(12.dp)))
                     Spacer(Modifier.width(12.dp))
-                    Column {
-                        Text("PIANYU STUDIO",fontWeight=FontWeight.Bold,letterSpacing=1.sp)
+                    Column(Modifier.weight(1f)) {
+                        Text("PIANYU STUDIO",fontWeight=FontWeight.Bold,letterSpacing=1.sp,maxLines=1,overflow=TextOverflow.Ellipsis)
                         Text("留住灵感，慢慢完成。",style=MaterialTheme.typography.bodyMedium,color=StudioPalette.Muted)
                     }
+                    TextButton(onClick=onAbout) {Text("关于")}
                 }
                 Column(Modifier.fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(12.dp)) {
                     Row(horizontalArrangement=Arrangement.spacedBy(12.dp)) {
