@@ -20,5 +20,14 @@ app/build
 /work/
 /dist/
 /.codex*/
+/.taste-skill/
+/.12ui-redesign/
+/site/download/*.apk
 *.hprof
 *.log
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

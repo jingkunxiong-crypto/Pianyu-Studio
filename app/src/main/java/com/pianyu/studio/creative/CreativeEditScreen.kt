@@ -87,10 +87,21 @@ fun CreativeEditScreen(uri:String,onBack:()->Unit,onSign:(Uri)->Unit) {
     val picker=rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
         if(it!=null) {selectedUri=it.toString();session++}
     }
-    key(session) {
-        CreativeEditor(selectedUri,onBack,onSign,onAgain={
-            picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-        })
+    var mode by rememberSaveable { mutableStateOf("局部留彩") }
+    var modeLocked by remember { mutableStateOf(false) }
+    Column(Modifier.fillMaxSize()) {
+        Row(Modifier.fillMaxWidth().safeDrawingPadding().padding(horizontal=20.dp), horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+            listOf("局部留彩", "相机画幅").forEach { item ->
+                FilterChip(selected=mode==item, onClick={mode=item}, enabled=!modeLocked, label={Text(item)}, modifier=Modifier.weight(1f))
+            }
+        }
+        key(session,mode) {
+            if(mode=="相机画幅") CameraFrameScreen(selectedUri,onBack,onSavingChanged={modeLocked=it},onAgain={
+                picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }) else CreativeEditor(selectedUri,onBack,onSign,onAgain={
+                picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            })
+        }
     }
 }
 

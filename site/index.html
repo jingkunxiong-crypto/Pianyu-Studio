@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f6f2">
+  <meta name="description" content="Pianyu Studio 片屿工作室：在 Android 手机上完成局部留彩、相机画幅、自由拼图、签名水印和色彩取样。">
+  <meta property="og:title" content="Pianyu Studio · 片屿工作室">
+  <meta property="og:description" content="把一张照片，做成自己的作品。">
+  <meta property="og:image" content="https://pianyu.jacksakuya.com/assets/coast-umbrella.webp">
+  <title>Pianyu Studio · 片屿工作室</title>
+  <link rel="icon" type="image/png" sizes="96x96" href="assets/pianyu-icon-96.png">
+  <link rel="stylesheet" href="styles.css?v=20261022-3">
+  <script src="vendor/gsap.min.js" defer></script>
+  <script src="script.js?v=20261022-3" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Pianyu Studio 首页"><span>Pianyu Studio</span></a>
+    <button class="menu-toggle" type="button" aria-label="打开导航" aria-controls="site-nav" aria-expanded="false"><span></span><span></span></button>
+    <nav class="site-nav" id="site-nav" aria-label="主导航">
+      <a href="#work">作品与功能</a><a href="#about">关于片屿</a>
+      <a class="nav-download" href="/download/Pianyu-Studio-v0.3.0-preview.apk" download>下载 APK <span aria-hidden="true">↓</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero page" id="top" data-page-label="首页" aria-labelledby="hero-title">
+      <div class="scene-art scene-art-hero" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="hero-title-wrap"><h1 id="hero-title"><span class="hero-title-line">PIANYU</span><span class="hero-title-desc">片屿 · Android 照片创作应用</span></h1></div>
+      <div class="hero-photo" aria-label="海边持红伞的人物示例照片"><img src="assets/coast-umbrella.webp" srcset="assets/coast-umbrella-800.webp 800w, assets/coast-umbrella.webp 1536w" sizes="100vw" alt="蓝灰色海岸与一把红伞" width="1536" height="1024" fetchpriority="high" decoding="async"></div>
+      <div class="hero-bottom"><p>把照片变成作品。<br>从颜色、排版到署名。</p><a href="#work" class="text-link">探索作品 <span aria-hidden="true">↓</span></a></div>
+    </section>
+
+    <section class="intro page" id="work" data-page-label="创作方式" aria-labelledby="intro-title">
+      <div class="scene-art scene-art-intro" aria-hidden="true"><i></i><i></i><i></i></div>
+      <h2 id="intro-title">一张照片，<br><em>不止一种表达。</em></h2>
+      <p>片屿把局部留彩、相机画幅、拼图、签名水印与色彩取样放在同一间移动工作室。以下是用演示照片制作的效果示意。</p>
+    </section>
+
+    <section class="work-section color-section page" id="selective-color" data-page-label="局部留彩" aria-labelledby="color-title">
+      <div class="scene-art scene-art-color" aria-hidden="true"><i></i><i></i></div>
+      <div class="work-heading"><h2 id="color-title">留下这一点颜色。</h2><p>先让整张照片回到黑白，再将你想强调的部分还原成原色。</p></div>
+      <div class="color-work">
+        <div class="color-preview" id="color-preview" tabindex="0" aria-label="局部留彩示例，可拖动彩色区域，也可用方向键移动">
+          <img class="color-base" src="assets/flower-still-life-gray.webp" srcset="assets/flower-still-life-gray-640.webp 640w, assets/flower-still-life-gray.webp 1122w" sizes="(max-width: 680px) 100vw, 55vw" alt="黑白的窗边花枝" width="1122" height="1402" loading="lazy" decoding="async">
+          <img class="color-reveal" id="color-reveal" src="assets/flower-still-life.webp" srcset="assets/flower-still-life-640.webp 640w, assets/flower-still-life.webp 1122w" sizes="(max-width: 680px) 100vw, 55vw" alt="" width="1122" height="1402" loading="lazy" decoding="async">
+          <div class="color-hit" id="color-hit" aria-hidden="true"></div>
+        </div>
+        <div class="color-details">
+          <p class="large-note">让视线，<br>停在这里。</p>
+          <p>拖动照片里的彩色区域。你也可以试试不同形状，调整它的大小。</p>
+          <div class="shape-picker" role="group" aria-label="留彩区域形状">
+            <button type="button" class="shape-button is-active" data-shape="circle" aria-pressed="true">圆形</button>
+            <button type="button" class="shape-button" data-shape="rectangle" aria-pressed="false">矩形</button>
+            <button type="button" class="shape-button" data-shape="rounded" aria-pressed="false">圆角</button>
+            <button type="button" class="shape-button" data-shape="star" aria-pressed="false">星形</button>
+            <button type="button" class="shape-button" data-shape="heart" aria-pressed="false">心形</button>
+            <button type="button" class="shape-button" data-shape="diamond" aria-pressed="false">菱形</button>
+          </div>
+          <label class="size-control" for="mask-size"><span>区域大小</span><input id="mask-size" type="range" min="16" max="43" value="31"><output id="size-value" for="mask-size">31%</output></label>
+          <p class="detail-caption">应用中还可以双指缩放、调整圆角，并按原图分辨率保存。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="work-section collage-section page" id="collage" data-page-label="自由拼图" aria-labelledby="collage-title">
+      <div class="scene-art scene-art-collage" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="work-heading"><h2 id="collage-title">把瞬间<br>排成画面。</h2><p>自由拼图：2–9 张照片，选择布局、比例与间距，再逐张裁切、替换或旋转。</p></div>
+      <figure class="collage-art" aria-label="由海岸、山湖和花枝组成的三张照片拼图示例">
+        <div class="collage-cell collage-main"><img src="assets/coast-umbrella.webp" srcset="assets/coast-umbrella-800.webp 800w, assets/coast-umbrella.webp 1536w" sizes="(max-width: 680px) 55vw, 65vw" alt="雨后海岸" width="1536" height="1024" loading="lazy" decoding="async"></div>
+        <div class="collage-cell collage-top"><img src="assets/demo-landscape-optimized.webp" srcset="assets/demo-landscape-800.webp 800w, assets/demo-landscape-optimized.webp 1448w" sizes="(max-width: 680px) 40vw, 30vw" alt="山湖日落" width="1448" height="1086" loading="lazy" decoding="async"></div>
+        <div class="collage-cell collage-bottom"><img src="assets/flower-still-life.webp" srcset="assets/flower-still-life-640.webp 640w, assets/flower-still-life.webp 1122w" sizes="(max-width: 680px) 40vw, 30vw" alt="窗边花枝" width="1122" height="1402" loading="lazy" decoding="async"></div>
+      </figure>
+      <p class="art-caption">示例排版 · 三张照片，三种视角</p>
+    </section>
+
+    <section class="work-section signature-section page" id="signature" data-page-label="签名水印" aria-labelledby="signature-title">
+      <div class="scene-art scene-art-signature" aria-hidden="true"><i></i><i></i></div>
+      <div class="signature-copy"><h2 id="signature-title">给作品一个<br>自己的落款。</h2><p>手写、提取或管理透明签名预设，让署名自然地留在画面上。多张照片也能一起处理。</p></div>
+      <figure class="signature-art"><img src="assets/demo-landscape-optimized.webp" srcset="assets/demo-landscape-800.webp 800w, assets/demo-landscape-optimized.webp 1448w" sizes="(max-width: 680px) 100vw, 66vw" alt="山与湖的摄影作品示例" width="1448" height="1086" loading="lazy" decoding="async"><span class="demo-signature" aria-label="示例签名 Pianyu">Pianyu</span><figcaption>示例署名 · Pianyu</figcaption></figure>
+    </section>
+
+    <section class="work-section palette-section page" id="palette" data-page-label="色彩取样" aria-labelledby="palette-title">
+      <div class="scene-art scene-art-palette" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="palette-heading"><h2 id="palette-title">把一张照片的<br>颜色带走。</h2><p>提取 4–6 种代表色，做成带圆形色块与 HEX 色号的取样卡。可选择比例，也可加入签名。</p></div>
+      <figure class="palette-art" aria-label="花枝照片和五种取样颜色的示意色卡">
+        <img src="assets/flower-still-life.webp" srcset="assets/flower-still-life-640.webp 640w, assets/flower-still-life.webp 1122w" sizes="(max-width: 680px) 100vw, 75vw" alt="窗边橙色花枝" width="1122" height="1402" loading="lazy" decoding="async">
+        <figcaption class="swatch-row"><span class="swatch"><i style="--swatch:#dfc9a8"></i><b>#DFC9A8</b></span><span class="swatch"><i style="--swatch:#31502c"></i><b>#31502C</b></span><span class="swatch"><i style="--swatch:#b4602d"></i><b>#B4602D</b></span><span class="swatch"><i style="--swatch:#efe5d0"></i><b>#EFE5D0</b></span><span class="swatch"><i style="--swatch:#6b715a"></i><b>#6B715A</b></span></figcaption>
+      </figure>
+      <p class="art-caption">示意色值，根据展示照片人工选取；应用内由照片取样生成。</p>
+    </section>
+
+    <section class="about-section page" id="about" data-page-label="关于片屿" aria-labelledby="about-title">
+      <div class="scene-art scene-art-about" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="about-title"><h2 id="about-title">一间装在口袋里的<br>照片工作室。</h2></div>
+      <div class="about-copy"><p>从导入照片，到调整细节，再到保存作品，四种创作方式沿用同一套操作语言。图片在本机处理，原图保留，作品另行保存。</p><p>由 <strong>Sakuya_Jack</strong> 开发。支持 Android 8.0 及以上系统；创意编辑以原图分辨率导出，JPEG 编码质量约 80%。</p><a class="about-link" href="https://github.com/jingkunxiong-crypto/Pianyu-Studio" target="_blank" rel="noopener noreferrer">查看开源项目 <span aria-hidden="true">↗</span></a></div>
+    </section>
+
+    <section class="download-section page" id="download" data-page-label="下载应用" aria-labelledby="download-title">
+      <img class="ending-emblem ending-emblem-download" src="assets/pianyu-ending-emblem.webp" alt="" width="1068" height="1040" loading="lazy" decoding="async">
+      <div class="download-heading"><h2 id="download-title">下一张作品，<br>从这里开始。</h2></div>
+      <div class="download-bottom"><div><p>下载 Pianyu Studio，试试新的相机画幅，让照片和相机留在同一张作品里。</p><small class="download-meta">v0.3.0-preview · 约 20 MB · Android 8.0+ · Debug 签名</small></div><a href="/download/Pianyu-Studio-v0.3.0-preview.apk" download>直接下载 APK <span aria-hidden="true">↓</span></a></div>
+    </section>
+  </main>
+  <footer class="site-footer page" id="credits" data-page-label="制作与反馈" aria-label="制作与反馈">
+    <img class="ending-emblem ending-emblem-footer" src="assets/pianyu-ending-emblem.webp" alt="" width="1068" height="1040" loading="lazy" decoding="async">
+    <div class="footer-heading"><h2 class="footer-wordmark">PIANYU</h2><p class="footer-note">把照片变成作品。</p></div>
+    <div class="footer-bottom"><p>片屿工作室 · Sakuya_Jack</p><nav aria-label="页脚导航"><a href="#top">回到顶部 ↑</a><a href="https://github.com/jingkunxiong-crypto/Pianyu-Studio/issues" target="_blank" rel="noopener noreferrer">问题反馈</a><a href="https://github.com/jingkunxiong-crypto/Pianyu-Studio" target="_blank" rel="noopener noreferrer">GitHub</a></nav><p>© <span id="year">2026</span></p></div>
+  </footer>
+  <nav class="page-rail" aria-label="翻页导航">
+    <button class="page-rail-prev" type="button" aria-label="上一页">↑</button>
+    <span class="page-rail-current" aria-live="polite"><b>01</b><span class="page-rail-divider"> / </span><span>09</span></span>
+    <span class="page-rail-label" aria-hidden="true">首页</span>
+    <button class="page-rail-next" type="button" aria-label="下一页">↓</button>
+  </nav>
+</body>
+</html>
