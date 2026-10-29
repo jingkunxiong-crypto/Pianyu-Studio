@@ -11,8 +11,8 @@ android {
         applicationId = "com.pianyu.studio"
         minSdk = 26
         targetSdk = 37
-        versionCode = 3
-        versionName = "0.3.0-preview"
+        versionCode = 4
+        versionName = "0.4.0-preview"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

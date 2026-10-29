@@ -8,7 +8,7 @@
 
 移动端翻页保留卡片与半透明描边，但避免在全屏边框上实时计算背景模糊，并缩短过场和页内动画。英文字体存放在 `assets/fonts/`，各字体的开源许可证也在该目录；中文使用设备字体，不依赖 Google Fonts 服务。
 
-下载按钮指向同域名下的 `download/Pianyu-Studio-v0.3.0-preview.apk`。部署前把已验证的 Android APK 放到此路径；该预览包使用 Android Debug 签名。安装包不提交到 Git 仓库，Cloudflare Pages 直接上传时会包含本地文件。
+下载按钮指向同域名下的 `download/Pianyu-Studio-v0.4.0-preview.apk`。部署前把已验证的 Android APK 放到此路径；该预览包使用 Android Debug 签名。安装包不提交到 Git 仓库，Cloudflare Pages 直接上传时会包含本地文件。
 
 ## 本地预览
 
@@ -28,6 +28,6 @@ python -m http.server 4173 --directory site
 npx wrangler@latest pages deploy site --project-name pianyu-studio --branch main
 ```
 
-上传前确认 `site/download/Pianyu-Studio-v0.3.0-preview.apk` 存在；它会随网站一起上传，但不会提交到 Git 仓库。正式下载地址：<https://pianyu.jacksakuya.com/download/Pianyu-Studio-v0.3.0-preview.apk>。
+上传前确认 `site/download/Pianyu-Studio-v0.4.0-preview.apk` 存在；它会随网站一起上传，但不会提交到 Git 仓库。正式下载地址：<https://pianyu.jacksakuya.com/download/Pianyu-Studio-v0.4.0-preview.apk>。
 
 每次更新 `styles.css` 或 `script.js` 时，同时更新 `index.html` 中对应的 `?v=` 版本号，以避开自定义域名上可能保留的旧静态资源缓存。

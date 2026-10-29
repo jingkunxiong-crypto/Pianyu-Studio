@@ -61,7 +61,7 @@ internal fun AboutScreen(onBack:()->Unit) {
                 item {
                     AboutCard("照片与隐私") {
                         Text("图片编辑与签名处理在设备本地完成。通过系统照片选择器读取你选择的照片，保存作品时创建新副本。",color=StudioPalette.Muted)
-                        Text("创意编辑默认保留原图分辨率，以 JPEG 80% 质量保存。签名库在本应用内共享，旧版独立应用的签名可通过透明 PNG 导入。",color=StudioPalette.Muted)
+                        Text("局部留彩默认以 JPEG 80% 质量保存；相机画幅支持 PNG 分块无损保存和 JPEG 80%。签名库在本应用内共享，旧版独立应用的签名可通过透明 PNG 导入。",color=StudioPalette.Muted)
                     }
                 }
                 item {

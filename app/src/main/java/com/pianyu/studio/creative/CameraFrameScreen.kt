@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas as NativeCanvas
 import android.graphics.Color as NativeColor
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
@@ -40,6 +41,14 @@ import java.util.Locale
 import java.util.UUID
 import kotlin.math.*
 
+/** Apply clockwise quarter turns after the source EXIF transform. */
+internal fun rotatedExifOrientation(orientation:Int, turns:Int):Int {
+    val clockwise=intArrayOf(0,6,7,8,5,2,3,4,1)
+    var result=orientation.takeIf { it in 1..8 } ?: 1
+    repeat(((turns%4)+4)%4) { result=clockwise[result] }
+    return result
+}
+
 private data class CameraInfo(val model:String, val focal:String, val aperture:String)
 private fun readInfo(file:File):CameraInfo = try {
     val e=ExifInterface(file.path)
@@ -62,7 +71,7 @@ private fun drawPhoto(c:NativeCanvas, photo:Bitmap, dest:RectF, crop:Boolean, pa
 private fun cardHeight(width:Int,photo:Bitmap,ratio:Float):Int = if(ratio>0) (width/ratio).roundToInt() else (width*(photo.height.toFloat()/photo.width+.64f)).roundToInt()
 
 /** Same drawing is used for preview and output, in normalized coordinates. */
-private fun drawCameraCard(c:NativeCanvas,photo:Bitmap,w:Float,h:Float,ratio:Float,crop:Boolean,blur:Float,camera:Bitmap,info:String,offsetX:Float,offsetY:Float) {
+internal fun drawCameraCard(c:NativeCanvas,photo:Bitmap,w:Float,h:Float,ratio:Float,crop:Boolean,blur:Float,camera:Bitmap,info:String,offsetX:Float,offsetY:Float) {
     val p=Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     c.drawColor(NativeColor.rgb(230,235,232))
     val bottom=if(ratio==0f) w*.64f else h*.50f
@@ -101,7 +110,14 @@ fun CameraFrameScreen(uri:String,onBack:()->Unit,onSavingChanged:(Boolean)->Unit
     var photo by remember(uri) { mutableStateOf<Bitmap?>(null) }
     var model by rememberSaveable(uri) { mutableStateOf("") };var focal by rememberSaveable(uri) { mutableStateOf("") };var aperture by rememberSaveable(uri) { mutableStateOf("") }
     var ratio by rememberSaveable { mutableFloatStateOf(.75f) };var crop by rememberSaveable { mutableStateOf(true) };var blur by rememberSaveable { mutableFloatStateOf(.8f) };val camera=remember { BitmapFactory.decodeResource(context.resources,R.drawable.camera_back_frame) }
+    var rotation by rememberSaveable(uri) { mutableIntStateOf(0) }
+    val rotatedPhoto=remember(photo,rotation) {
+        photo?.let { source -> if(rotation==0) source else Bitmap.createBitmap(source,0,0,source.width,source.height,Matrix().apply { postRotate(rotation*90f) },true) }
+    }
+    DisposableEffect(rotatedPhoto,photo) { onDispose { if(rotatedPhoto != null && rotatedPhoto !== photo) rotatedPhoto.recycle() } }
     var offsetX by rememberSaveable(uri) { mutableFloatStateOf(0f) };var offsetY by rememberSaveable(uri) { mutableFloatStateOf(0f) }
+    var formatName by rememberSaveable { mutableStateOf(PhotoFormat.PNG.name) }
+    val format=PhotoFormat.valueOf(formatName)
     var loading by remember { mutableStateOf(true) };var saving by remember { mutableStateOf(false) };var exportPage by remember { mutableStateOf(false) };var stage by remember { mutableStateOf("") };var progress by remember { mutableFloatStateOf(0f) };var saved by remember { mutableStateOf<SavedPhoto?>(null) };var error by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(saving) { onSavingChanged(saving) }
     DisposableEffect(Unit) { onDispose { onSavingChanged(false) } }
@@ -116,34 +132,44 @@ fun CameraFrameScreen(uri:String,onBack:()->Unit,onSavingChanged:(Boolean)->Unit
     }
     val info=listOf(model.trim(),focal.trim(),aperture.trim()).filter { it.isNotEmpty() }.joinToString("  ·  ")
     fun save() {
-        if(saving || photo==null) return
+        if(saving || rotatedPhoto==null) return
         saving=true;exportPage=true;saved=null;progress=.05f;stage="正在读取原图"
         scope.launch {
             try {
                 saved=withContext(Dispatchers.IO) {
                     val imported=PhotoRepository(File(context.cacheDir,"frame-export")).import(context.contentResolver,Uri.parse(uri))
-                    val file=File(context.cacheDir,"exports/Pianyu_Camera_${UUID.randomUUID()}.jpg")
+                    val file=File(context.cacheDir,"exports/Pianyu_Camera_${UUID.randomUUID()}.${format.extension}")
                     var decoded:Bitmap?=null;var oriented:Bitmap?=null;var output:Bitmap?=null
                     try {
                         imported.preview.recycle()
-                        val width=imported.width;val height=if(ratio>0) (width/ratio).roundToInt() else (imported.height+width*.64f).roundToInt()
+                        val turned=imported.copy(width=if(rotation%2==0) imported.width else imported.height,
+                            height=if(rotation%2==0) imported.height else imported.width,
+                            orientation=rotatedExifOrientation(imported.orientation,rotation))
+                        val width=turned.width;val height=if(ratio>0) (width/ratio).roundToInt() else (turned.height+width*.64f).roundToInt()
+                        if(format==PhotoFormat.PNG) {
+                            withContext(Dispatchers.Main) {progress=.1f;stage="正在分块生成无损画幅"}
+                            CameraFramePngExporter.render(turned,rotatedPhoto!!,camera,ratio,crop,blur,info,offsetX,offsetY,file) { amount ->
+                                withContext(Dispatchers.Main) {progress=.1f+amount*.78f;stage="正在分块生成无损画幅"}
+                            }
+                        } else {
                         val available=Runtime.getRuntime().let { it.maxMemory()-it.totalMemory()+it.freeMemory() }
-                        val required=imported.width.toLong()*imported.height*4L*(if(imported.orientation in 2..8) 2 else 1)+width.toLong()*height*4L
-                        require(required+32L*1024*1024 < available*.8) { "原尺寸画幅所需内存超过设备可用空间，请选择较小的照片。" }
+                        val required=turned.width.toLong()*turned.height*4L*(if(turned.orientation in 2..8) 2 else 1)+width.toLong()*height*4L
+                        require(required+32L*1024*1024 < available*.8) { "JPEG 原尺寸导出需要更多内存，请返回选择 PNG 无损分块保存。" }
                         withContext(Dispatchers.Main) {progress=.2f;stage="正在生成画幅"}
                         decoded=BitmapFactory.decodeFile(imported.file.path) ?: error("原图解码失败")
-                        oriented=PhotoRepository.orient(decoded!!,imported.orientation)
+                        oriented=PhotoRepository.orient(decoded!!,turned.orientation)
                         if(oriented !== decoded) { decoded!!.recycle();decoded=null }
                         output=Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
                         drawCameraCard(NativeCanvas(output!!),oriented!!,width.toFloat(),height.toFloat(),ratio,crop,blur,camera,info,offsetX,offsetY)
                         withContext(Dispatchers.Main) {progress=.65f;stage="正在编码照片"}
                         file.parentFile?.mkdirs();file.outputStream().use { check(output!!.compress(Bitmap.CompressFormat.JPEG,80,it)) {"照片编码失败"} }
+                        }
                         withContext(Dispatchers.Main) {progress=.9f;stage="正在写入相册"}
-                        PhotoExporter(context).saveToAlbum(ExportedPhoto(file,width,height,PhotoFormat.JPG),"创意编辑 · 相机画幅")
+                        PhotoExporter(context).saveToAlbum(ExportedPhoto(file,width,height,format),"创意编辑 · 相机画幅")
                     } finally { output?.recycle();oriented?.recycle();if(decoded !== oriented) decoded?.recycle(); imported.file.delete();file.delete() }
                 }
                 stage="保存成功";progress=1f
-            } catch(e:CancellationException) {throw e} catch(e:OutOfMemoryError) {stage="保存失败";error="设备内存不足，无法按原尺寸保存，请选择较小的照片。"} catch(e:Exception) {stage="保存失败";error=e.message ?: "保存失败"} finally {saving=false}
+            } catch(e:CancellationException) {throw e} catch(e:OutOfMemoryError) {stage="保存失败";error="设备内存不足，请返回选择 PNG 分块保存或关闭其他应用后重试。"} catch(e:Exception) {stage="保存失败";error=e.message ?: "保存失败"} finally {saving=false}
         }
     }
     val permission=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { if(it) save() else error="保存需要相册存储权限。" }
@@ -158,7 +184,7 @@ fun CameraFrameScreen(uri:String,onBack:()->Unit,onSavingChanged:(Boolean)->Unit
         } else Column(Modifier.fillMaxSize().navigationBarsPadding().padding(horizontal=20.dp)) {
             StudioToolbar("相机画幅",onBack,"保存",photo!=null&&!saving,onAction={if(Build.VERSION.SDK_INT<29 && ContextCompat.checkSelfPermission(context,Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED) permission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) else save()})
             Box(Modifier.fillMaxWidth().weight(1f).padding(vertical=8.dp),contentAlignment=Alignment.Center) {
-                val source=photo
+                val source=rotatedPhoto
                 if(source==null) { if(loading) CircularProgressIndicator() else Text("照片加载失败") }
                 else BoxWithConstraints(Modifier.fillMaxSize(),contentAlignment=Alignment.Center) {
                     val r=source.width.toFloat()/cardHeight(source.width,source,ratio);val width=minOf(maxWidth,maxHeight*r)
@@ -169,6 +195,7 @@ fun CameraFrameScreen(uri:String,onBack:()->Unit,onSavingChanged:(Boolean)->Unit
             }
             Column(Modifier.fillMaxWidth().heightIn(max=310.dp).verticalScroll(rememberScrollState()).padding(bottom=12.dp)) {
                 Text("填满画幅时可拖动照片调整构图",color=StudioPalette.Muted,style=MaterialTheme.typography.bodySmall)
+                TextButton(onClick={rotation=(rotation+1)%4;offsetX=0f;offsetY=0f},enabled=rotatedPhoto!=null&&!saving) {Text("↻ 旋转照片 90°")}
                 Text("画幅比例",style=MaterialTheme.typography.titleSmall)
                 Row(horizontalArrangement=Arrangement.spacedBy(6.dp)) { listOf("自适应" to 0f,"3:4" to .75f,"4:5" to .8f,"9:16" to 9f/16f).forEach { (name,value) -> FilterChip(selected=ratio==value,onClick={ratio=value},label={Text(name)}) } }
                 Row(horizontalArrangement=Arrangement.spacedBy(6.dp)) { FilterChip(selected=!crop,onClick={crop=false},label={Text("完整显示")});FilterChip(selected=crop,onClick={crop=true},label={Text("填满画幅")}) }
@@ -176,7 +203,12 @@ fun CameraFrameScreen(uri:String,onBack:()->Unit,onSavingChanged:(Boolean)->Unit
                 Text("拍摄信息 · 型号手动填写，留空则不显示",style=MaterialTheme.typography.bodyMedium,color=StudioPalette.Muted)
                 OutlinedTextField(model,{model=it},label={Text("相机型号")},singleLine=true,modifier=Modifier.fillMaxWidth())
                 Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {OutlinedTextField(focal,{focal=it},label={Text("焦距，如 35mm")},singleLine=true,modifier=Modifier.weight(1f));OutlinedTextField(aperture,{aperture=it},label={Text("光圈，如 f/2.8")},singleLine=true,modifier=Modifier.weight(1f))}
-                Text("JPEG 80% · 按照片宽度导出，画幅会增加图片高度。",color=StudioPalette.Muted,style=MaterialTheme.typography.bodySmall)
+                Text("保存格式",style=MaterialTheme.typography.titleSmall)
+                Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                    FilterChip(selected=format==PhotoFormat.PNG,onClick={formatName=PhotoFormat.PNG.name},label={Text("PNG 无损 · 适合大图")})
+                    FilterChip(selected=format==PhotoFormat.JPG,onClick={formatName=PhotoFormat.JPG.name},label={Text("JPEG 80%")})
+                }
+                Text(if(format==PhotoFormat.PNG) "PNG 无损分块保存，按照片宽度生成画幅。" else "JPEG 80% · 大照片可能需要选择 PNG。",color=StudioPalette.Muted,style=MaterialTheme.typography.bodySmall)
             }
         }
     }
